@@ -1,0 +1,14 @@
+selain->palvelin: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+
+note over selain:
+Selain suorittaa js-koodia. Tapahtumankäsittelijä
+luo muistiinpanon JSON muodossa ja
+lähettää lomakkeen palvelimelle.
+end note
+
+palvelin-->selain: HTTP 201 CREATED
+
+note over palvelin
+palvelin vastaa kyselyyn statuskoodilla 201
+muita http-pyyntöjä ei suoriteta
+end note

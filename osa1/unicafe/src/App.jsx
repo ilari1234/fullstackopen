@@ -66,8 +66,6 @@ const App = () => {
     setBad(bad + 1)
   }
 
-  //<Statistics good={good} neutral={neutral} bad={bad}/>
-
   return (
     <div>
       <h1>give feedback</h1>

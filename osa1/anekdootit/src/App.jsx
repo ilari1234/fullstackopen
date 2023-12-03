@@ -25,11 +25,7 @@ const App = () => {
     setMostVotes(CalculateMostVotes(copy))
   }
 
-  const CalculateMostVotes = (arr) => {
-    let max = Math.max(...arr)
-    let maxIndex = arr.indexOf(max)
-    return maxIndex;
-  }
+  const CalculateMostVotes = (arr) => arr.indexOf(Math.max(...arr))
 
   return (
     <div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
 
 const Filter = ({filter, handleFilterChange}) => {
   return(
@@ -25,10 +25,30 @@ const PersonForm = ( {submit, name, number, handleNameChange, handleNumberChange
       </form>
     </>
   )
-
 }
 
-const Persons = ( {persons} ) => persons.map(person => <p key={person.name}>{person.name} {person.number}</p>)
+const Persons = ( {persons, deletePersonById} ) => {
+  return (
+    <table>
+      <tbody>
+        {persons.map(person => 
+        <Person key={person.id} person={person} deletePerson={() => deletePersonById(person)}/>
+        )}
+      </tbody>
+    </table>
+    
+  )
+}
+
+const Person = ( {person, deletePerson} ) => {
+  return (
+    <tr>      
+      <td>{person.name}</td>
+      <td>{person.number}</td>
+      <td><button onClick={deletePerson}>delete</button></td>
+    </tr>
+  )
+}
   
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -37,9 +57,9 @@ const App = () => {
   const [personFilter, setPersonFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => setPersons(response.data))
+    personService
+      .getAll()
+        .then(initialPersons => setPersons(initialPersons))
   }, [])
 
   const addPerson = (event) => {
@@ -51,10 +71,19 @@ const App = () => {
 
     persons.some(person => person.name.toLowerCase() === personObject.name.toLowerCase()) 
       ? alert(`${personObject.name} is already added to phonebook`) 
-      : setPersons(persons.concat(personObject))
+      : personService
+        .create(personObject)
+          .then(createdPerson => setPersons(persons.concat(createdPerson)))
 
     setNewName('')
     setNewNumber('')
+  }
+
+  const deletePersonById = (personToDelete) => {
+    if (window.confirm(`Delete ${personToDelete.name}?`)) {
+      personService.remove(personToDelete.id)
+      .then(setPersons(remainingPersons => remainingPersons.filter(person => person.id !== personToDelete.id)))
+    }
   }
 
   const handleNameChange = (event) => {
@@ -78,7 +107,7 @@ const App = () => {
       <h2>Add new</h2>
       <PersonForm submit={addPerson} name={newName} number={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow}/>
+      <Persons persons={personsToShow} deletePersonById={deletePersonById}/>
     </div>
   )
 

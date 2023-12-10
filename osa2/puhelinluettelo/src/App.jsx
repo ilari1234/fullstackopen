@@ -70,10 +70,13 @@ const App = () => {
     }
 
     persons.some(person => person.name.toLowerCase() === personObject.name.toLowerCase()) 
-      ? alert(`${personObject.name} is already added to phonebook`) 
+      ? window.confirm(`${personObject.name} is already in phonebook, replace the old number with new one?`) 
+        ? updatePerson(personObject) 
+        : ""
       : personService
         .create(personObject)
           .then(createdPerson => setPersons(persons.concat(createdPerson)))
+          .catch(error => alert(`Failed to create: ${personObject.name}`))
 
     setNewName('')
     setNewNumber('')
@@ -83,7 +86,20 @@ const App = () => {
     if (window.confirm(`Delete ${personToDelete.name}?`)) {
       personService.remove(personToDelete.id)
       .then(setPersons(remainingPersons => remainingPersons.filter(person => person.id !== personToDelete.id)))
+      .catch(error => alert(`Failed to delete: ${personToDelete.name}`))
     }
+  }
+
+  const updatePerson = (updatedPerson) => {
+
+    const originalPerson = persons.find(p => p.name === updatedPerson.name)
+    const updatedPersonObject = {...originalPerson, number: updatedPerson.number}
+
+    personService
+      .update(originalPerson.id, updatedPersonObject)
+      .then(response => {
+        setPersons(persons.map(person => person.id !== originalPerson.id ? person : response))})
+        .catch(error => alert(`Failed to update: ${updatedPerson.name}`))
   }
 
   const handleNameChange = (event) => {

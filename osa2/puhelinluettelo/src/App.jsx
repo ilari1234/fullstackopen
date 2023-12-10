@@ -49,12 +49,26 @@ const Person = ( {person, deletePerson} ) => {
     </tr>
   )
 }
+
+const Notification = ({ message, className }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className={className}>
+      {message}
+    </div>
+  )
+}
   
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [personFilter, setPersonFilter] = useState('')
+  const [notificationMessage, setNotificationMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     personService
@@ -75,8 +89,13 @@ const App = () => {
         : ""
       : personService
         .create(personObject)
-          .then(createdPerson => setPersons(persons.concat(createdPerson)))
-          .catch(error => alert(`Failed to create: ${personObject.name}`))
+          .then(response => {
+            setPersons(persons.concat(response))
+            showNotificationMessage(`Added ${personObject.name}`)
+          })
+          .catch(() => {
+            showErrorMessage(`Failed to create: ${personObject.name}`)
+          })
 
     setNewName('')
     setNewNumber('')
@@ -85,8 +104,13 @@ const App = () => {
   const deletePersonById = (personToDelete) => {
     if (window.confirm(`Delete ${personToDelete.name}?`)) {
       personService.remove(personToDelete.id)
-      .then(setPersons(remainingPersons => remainingPersons.filter(person => person.id !== personToDelete.id)))
-      .catch(error => alert(`Failed to delete: ${personToDelete.name}`))
+      .then(() => {
+        setPersons(remainingPersons => remainingPersons.filter(person => person.id !== personToDelete.id))
+        showNotificationMessage(`Deleted ${personToDelete.name}`)
+      })
+      .catch(() => {
+        showErrorMessage(`Failed to delete: ${personToDelete.name}`)
+      })
     }
   }
 
@@ -98,8 +122,12 @@ const App = () => {
     personService
       .update(originalPerson.id, updatedPersonObject)
       .then(response => {
-        setPersons(persons.map(person => person.id !== originalPerson.id ? person : response))})
-        .catch(error => alert(`Failed to update: ${updatedPerson.name}`))
+          setPersons(persons.map(person => person.id !== originalPerson.id ? person : response))
+          showNotificationMessage(`Updated ${updatedPerson.name}`)
+      })
+        .catch(() => {
+          showErrorMessage(`Failed to update: ${updatedPerson.name}`)
+      })
   }
 
   const handleNameChange = (event) => {
@@ -116,9 +144,21 @@ const App = () => {
 
   const personsToShow = persons.filter(person => person.name.toLowerCase().includes(personFilter.toLowerCase()))
 
+  const showNotificationMessage = message => {
+    setNotificationMessage(message)
+    setTimeout(() => {setNotificationMessage(null)}, 5000)
+  }
+
+  const showErrorMessage = message => {
+    setErrorMessage(message)
+    setTimeout(() => {setErrorMessage(null)}, 5000)
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMessage} className={'notification'}/>
+      <Notification message={errorMessage} className={'error'}/>
       <Filter filter={personFilter} handleFilterChange={handleFilterChange} />
       <h2>Add new</h2>
       <PersonForm submit={addPerson} name={newName} number={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange} />

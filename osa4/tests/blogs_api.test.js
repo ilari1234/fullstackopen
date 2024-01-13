@@ -2,64 +2,15 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const testHelper = require('./test_helper')
 
 const api = supertest(app)
 
-const initialBlogs = [
-  {
-    _id: '5a422a851b54a676234d17f7',
-    title: 'React patterns',
-    author: 'Michael Chan',
-    url: 'https://reactpatterns.com/',
-    likes: 7,
-    __v: 0
-  },
-  {
-    _id: '5a422aa71b54a676234d17f8',
-    title: 'Go To Statement Considered Harmful',
-    author: 'Edsger W. Dijkstra',
-    url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-    likes: 5,
-    __v: 0
-  },
-  {
-    _id: '5a422b3a1b54a676234d17f9',
-    title: 'Canonical string reduction',
-    author: 'Edsger W. Dijkstra',
-    url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-    likes: 12,
-    __v: 0
-  },
-  {
-    _id: '5a422b891b54a676234d17fa',
-    title: 'First class tests',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-    likes: 10,
-    __v: 0
-  },
-  {
-    _id: '5a422ba71b54a676234d17fb',
-    title: 'TDD harms architecture',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-    likes: 0,
-    __v: 0
-  },
-  {
-    _id: '5a422bc61b54a676234d17fc',
-    title: 'Type wars',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-    likes: 2,
-    __v: 0
-  }
-]
-
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Blog.insertMany(initialBlogs)
+  await Blog.insertMany(testHelper.initialBlogs)
 })
+
 describe('Get blogs', () => {
   test('blogs are returned as json', async () => {
     await api
@@ -71,7 +22,7 @@ describe('Get blogs', () => {
   test('all blogs are returned', async () => {
     const response = await api.get('/api/blogs')
 
-    expect(response.body).toHaveLength(initialBlogs.length)
+    expect(response.body).toHaveLength(testHelper.initialBlogs.length)
   })
 
   test('specific blog is returned', async () => {
@@ -91,9 +42,8 @@ describe('Get blogs', () => {
 
 describe('Add blog', () => {
   test('new blog is added after POST operation', async () => {
-
     const newBlog = {
-      id: '659efb10787c65ee7b9ab7a9',
+      id: await testHelper.nonExistingId(),
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
@@ -106,11 +56,259 @@ describe('Add blog', () => {
       .expect(201)
       .expect('Content-type', /application\/json/)
 
-    const response = await api.get('/api/blogs')
+    const blogsAfterPost = await testHelper.blogsInDb()
 
-    expect(response.body).toHaveLength(initialBlogs.length + 1)
-    expect(response.body).toContainEqual(newBlog)
+    expect(blogsAfterPost).toHaveLength(testHelper.initialBlogs.length + 1)
+    expect(blogsAfterPost).toContainEqual(newBlog)
 
+  })
+
+  test('if likes is null, then it is set to 0', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: null
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-type', /application\/json/)
+
+    const blogsAfterPost = await testHelper.blogsInDb()
+
+    expect(blogsAfterPost).toHaveLength(testHelper.initialBlogs.length + 1)
+    expect(blogsAfterPost[testHelper.initialBlogs.length].likes).toBe(0)
+
+  })
+
+  test('if likes is missing from request body, then it is set to 0', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: null
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-type', /application\/json/)
+
+    const blogsAfterPost = await testHelper.blogsInDb()
+
+    expect(blogsAfterPost).toHaveLength(testHelper.initialBlogs.length + 1)
+    expect(blogsAfterPost[testHelper.initialBlogs.length].likes).toBe(0)
+  })
+
+  test('If title is missing from request body, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('If title is null, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      title: null,
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('If title length is 0, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      title: '',
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('If url is missing from request body, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      title: 'Go To Statement Considered Harmful',
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('If url is null, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      title: 'Go To Statement Considered Harmful',
+      url: null,
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('If url lenght is 0, then response code is 400', async () => {
+    const newBlog = {
+      id: await testHelper.nonExistingId(),
+      author: 'Edsger W. Dijkstra',
+      title: 'Go To Statement Considered Harmful',
+      url: '',
+      likes: 1
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+})
+
+describe('Delete blog', () => {
+  test('when DELETE is called with valid id, blog is deleted', async () => {
+    const blogsBeforeDelete = await testHelper.blogsInDb()
+
+    await api
+      .delete(`/api/blogs/${blogsBeforeDelete[0].id}`)
+      .expect(204)
+
+    const blogsAfterDelete = await testHelper.blogsInDb()
+    expect(blogsAfterDelete).toHaveLength(blogsBeforeDelete.length - 1)
+    expect(blogsAfterDelete).not.toContainEqual(blogsBeforeDelete[0])
+  })
+
+  test('when DELETE is called without id, 404 is returned', async () => {
+    await api
+      .delete('/api/blogs/')
+      .expect(404)
+  })
+})
+
+describe('Update blog', () => {
+  test('When PUT is called with valid id, blog is updated', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.likes = blogToUpdate.likes + 1
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+      .expect('Content-type', /application\/json/)
+
+    const blogsAfterUpdate = await testHelper.blogsInDb()
+    expect(blogsAfterUpdate).toContainEqual(blogToUpdate)
+
+  })
+
+  test('Title cannot be null in update', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.title = null
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(400)
+  })
+
+  test('Title cannot be empty in update', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.title = ''
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(400)
+  })
+
+  test('Url cannot be null in update', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.url = null
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(400)
+  })
+
+  test('Url cannot be empty in update', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.url = ''
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(400)
+  })
+
+  test('If likes is null, then it is set to 0', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.likes = null
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+      .expect('Content-type', /application\/json/)
+
+    blogToUpdate.likes = 0
+
+    const blogsAfterUpdate = await testHelper.blogsInDb()
+    expect(blogsAfterUpdate).toContainEqual(blogToUpdate)
+  })
+
+  test('If endpoint is called with invalid id, 404 is returned', async () => {
+    const blogsBeforeUpdate = await testHelper.blogsInDb()
+
+    const blogToUpdate = blogsBeforeUpdate[0]
+    blogToUpdate.id = await testHelper.nonExistingId()
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(404)
   })
 })
 

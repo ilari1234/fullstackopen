@@ -1,6 +1,6 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RVc2VyMSIsImlkIjoiNjVhMmQ0MmRjYTYyMjU3NDVkNDhlZDVhIiwiaWF0IjoxNzA1MjU1NzQ0LCJleHAiOjE3MDUyNTkzNDR9.WrUSo3eMfpGAqV43wqFsZq604vmp3EsIoz0MwBOcG0o
+Authorization: Bearer
 
 {
     "title": "test with middleware",

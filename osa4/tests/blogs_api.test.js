@@ -1,14 +1,39 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const testHelper = require('./test_helper')
 
 const api = supertest(app)
 
+const getToken = async (creds) => {
+  const response = await api
+    .post('/api/login')
+    .send(creds)
+    .expect(200)
+
+  return response.body.token
+}
+
+let token
+
+beforeAll(async () => {
+  const user = await User.findOne({ username: testHelper.blogCredentials.username })
+  if (!user) {
+    const passwordHash = await bcrypt.hash(testHelper.blogCredentials.password, 10)
+    const user = new User({ username: testHelper.blogCredentials.username, passwordHash })
+
+    await user.save()
+  }
+})
+
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Blog.insertMany(testHelper.initialBlogs)
+  const user = await User.findOne({ username: testHelper.blogCredentials.username })
+  const blogsToAdd = testHelper.initialBlogs.map(blog => ({ ...blog, user: user._id.toString() }))
+  await Blog.insertMany(blogsToAdd)
 })
 
 describe('Get blogs', () => {
@@ -41,31 +66,40 @@ describe('Get blogs', () => {
 })
 
 describe('Add blog', () => {
+
+  beforeEach(async () => {
+    token = await getToken(testHelper.blogCredentials)
+  })
+
   test('new blog is added after POST operation', async () => {
+    const user = await User.findOne({ username: testHelper.blogCredentials.username })
+
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5
+      likes: 5,
+      user: user._id
     }
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(201)
       .expect('Content-type', /application\/json/)
 
     const blogsAfterPost = await testHelper.blogsInDb()
+    const addedBlog = blogsAfterPost[testHelper.initialBlogs.length]
+    delete addedBlog.id
 
     expect(blogsAfterPost).toHaveLength(testHelper.initialBlogs.length + 1)
-    expect(blogsAfterPost).toContainEqual(newBlog)
+    expect(addedBlog).toEqual(newBlog)
 
   })
 
   test('if likes is null, then it is set to 0', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
@@ -74,6 +108,7 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(201)
       .expect('Content-type', /application\/json/)
@@ -87,7 +122,6 @@ describe('Add blog', () => {
 
   test('if likes is missing from request body, then it is set to 0', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       title: 'Go To Statement Considered Harmful',
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
@@ -96,6 +130,7 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(201)
       .expect('Content-type', /application\/json/)
@@ -108,7 +143,6 @@ describe('Add blog', () => {
 
   test('If title is missing from request body, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
       likes: 1
@@ -116,13 +150,13 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
   })
 
   test('If title is null, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
       title: null,
@@ -131,13 +165,13 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
   })
 
   test('If title length is 0, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
       title: '',
@@ -146,13 +180,13 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
   })
 
   test('If url is missing from request body, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       title: 'Go To Statement Considered Harmful',
       likes: 1
@@ -160,13 +194,13 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
   })
 
   test('If url is null, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       title: 'Go To Statement Considered Harmful',
       url: null,
@@ -175,13 +209,13 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
   })
 
   test('If url lenght is 0, then response code is 400', async () => {
     const newBlog = {
-      id: await testHelper.nonExistingId(),
       author: 'Edsger W. Dijkstra',
       title: 'Go To Statement Considered Harmful',
       url: '',
@@ -190,17 +224,55 @@ describe('Add blog', () => {
 
     await api
       .post('/api/blogs')
+      .auth(token, { type: 'bearer' })
       .send(newBlog)
       .expect(400)
+  })
+
+  test('If token is missing from header, then 401 is returned', async () => {
+    const newBlog = {
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 5,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('{"error":"token missing or invalid"}')
+  })
+
+  test('If token is empty, then 401 is returned', async () => {
+    const newBlog = {
+      title: 'Go To Statement Considered Harmful',
+      author: 'Edsger W. Dijkstra',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+      likes: 5,
+    }
+
+    await api
+      .post('/api/blogs')
+      .auth('', { type: 'bearer' })
+      .send(newBlog)
+      .expect(401)
+      .expect('{"error":"token missing or invalid"}')
   })
 })
 
 describe('Delete blog', () => {
+
+  beforeEach(async () => {
+    token = await getToken(testHelper.blogCredentials)
+  })
+
   test('when DELETE is called with valid id, blog is deleted', async () => {
     const blogsBeforeDelete = await testHelper.blogsInDb()
 
     await api
       .delete(`/api/blogs/${blogsBeforeDelete[0].id}`)
+      .auth(token, { type: 'bearer' })
       .expect(204)
 
     const blogsAfterDelete = await testHelper.blogsInDb()
@@ -211,7 +283,17 @@ describe('Delete blog', () => {
   test('when DELETE is called without id, 404 is returned', async () => {
     await api
       .delete('/api/blogs/')
+      .auth(token, { type: 'bearer' })
       .expect(404)
+  })
+
+  test('when DELETE is called without token, 401 is returned', async () => {
+    const blogsBeforeDelete = await testHelper.blogsInDb()
+
+    await api
+      .delete(`/api/blogs/${blogsBeforeDelete[0].id}`)
+      .expect(401)
+      .expect('{"error":"token missing or invalid"}')
   })
 })
 

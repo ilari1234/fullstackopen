@@ -52,6 +52,13 @@ const initialBlogs = [
   }
 ]
 
+const blogCredentials = {
+  _id: '65a6dd93bda3abf5b13c68cf',
+  username: 'testUser1',
+  name: 'Test User',
+  password: 'secret'
+}
+
 const nonExistingId = async () => {
   const blog = new Blog({
     title: 'Go To Statement Considered Harmful',
@@ -77,5 +84,5 @@ const usersInDb = async () => {
 
 
 module.exports = {
-  initialBlogs, nonExistingId, blogsInDb, usersInDb
+  initialBlogs, blogCredentials, nonExistingId, blogsInDb, usersInDb
 }

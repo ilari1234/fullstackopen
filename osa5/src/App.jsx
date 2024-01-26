@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import Blogs from './components/Blog'
 import Login from './components/Login'
+import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [notificationMessage, setNotificationMessage] = useState(null)
   const [user, setUser] = useState(null)
 
   useEffect(() => {
@@ -24,6 +26,16 @@ const App = () => {
     }
   }, [])
 
+  const showNotificationMessage = message => {
+    setNotificationMessage(message)
+    setTimeout(() => { setNotificationMessage(null) }, 5000)
+  }
+
+  const showErrorMessage = message => {
+    setErrorMessage(message)
+    setTimeout(() => { setErrorMessage(null) }, 5000)
+  }
+
   const handleLogin = async (event) => {
     event.preventDefault()
 
@@ -40,16 +52,14 @@ const App = () => {
       blogService.setToken(user.token)
       setUser(user)
     } catch (exception) {
-      setErrorMessage('wrong credentials')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
+      showErrorMessage('Wrong username or password')
     }
   }
 
   const handleLogout = () => {
     localStorage.clear()
     setUser(null)
+    showNotificationMessage("Logged out from the system")
   }
 
   const handleAddingBlog = async (event) => {
@@ -64,21 +74,27 @@ const App = () => {
         }
       )
       setBlogs(blogs.concat(addedBlog))
+      showNotificationMessage(`A new blog ${addedBlog.title} added`)
     } catch (exception) {
-      setErrorMessage('Adding blog failed')
-      console.error(exception.message)
+      showErrorMessage('Adding blog failed')
     }
   }
 
   if (user === null) {
     return (
-      <Login handleLogin={handleLogin} />
+      <>
+        <Notification message={notificationMessage} className={'notification'} />
+        <Notification message={errorMessage} className={'error'} />
+        <Login handleLogin={handleLogin} />
+      </>
     )
   }
 
   return (
     <div>
-      <h2>blogs</h2>
+      <Notification message={notificationMessage} className={'notification'} />
+      <Notification message={errorMessage} className={'error'} />
+      <h2>Blogs</h2>
       <p>{user.name} is logged in</p>
       <button onClick={handleLogout}>Log out</button>
       <Blogs blogs={blogs} handleAddingBlog={handleAddingBlog} />

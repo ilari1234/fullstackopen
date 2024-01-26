@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import Blog from './components/Blog'
+import Blogs from './components/Blog'
 import Login from './components/Login'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [user, setUser] = useState(null)
 
@@ -21,6 +19,7 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBloglistUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
+      blogService.setToken(user.token)
       setUser(user)
     }
   }, [])
@@ -29,15 +28,17 @@ const App = () => {
     event.preventDefault()
 
     try {
-      const user = await loginService.login({
-        username, password,
-      })
+      const user = await loginService.login(
+        {
+          username: event.target.username.value,
+          password: event.target.password.value
+        }
+      )
       window.localStorage.setItem(
         'loggedBloglistUser', JSON.stringify(user)
       )
+      blogService.setToken(user.token)
       setUser(user)
-      setUsername('')
-      setPassword('')
     } catch (exception) {
       setErrorMessage('wrong credentials')
       setTimeout(() => {
@@ -51,52 +52,36 @@ const App = () => {
     setUser(null)
   }
 
+  const handleAddingBlog = async (event) => {
+    event.preventDefault()
+
+    try {
+      const addedBlog = await blogService.addBlog(
+        {
+          title: event.target.title.value,
+          author: event.target.author.value,
+          url: event.target.url.value
+        }
+      )
+      setBlogs(blogs.concat(addedBlog))
+    } catch (exception) {
+      setErrorMessage('Adding blog failed')
+      console.error(exception.message)
+    }
+  }
 
   if (user === null) {
     return (
-      <div>
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
-          <div>
-            username
-            <input
-              type="text"
-              value={username}
-              name="Username"
-              onChange={({ target }) => setUsername(target.value)}
-            />
-          </div>
-          <div>
-            password
-            <input
-              type="password"
-              value={password}
-              name="Password"
-              onChange={({ target }) => setPassword(target.value)}
-            />
-          </div>
-          <button type="submit">login</button>
-        </form>
-      </div>
+      <Login handleLogin={handleLogin} />
     )
   }
-
-  /*
-    if (user === null) {
-      return (
-        <Login username={username} password={password} handleLogin={handleLogin} />
-      )
-    }
-  */
 
   return (
     <div>
       <h2>blogs</h2>
       <p>{user.name} is logged in</p>
       <button onClick={handleLogout}>Log out</button>
-      {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
-      )}
+      <Blogs blogs={blogs} handleAddingBlog={handleAddingBlog} />
     </div>
   )
 }

@@ -62,6 +62,11 @@ const App = () => {
   const createBlog = async (blogObject) => {
     try {
       const addedBlog = await blogService.addBlog(blogObject)
+      addedBlog.user =
+      {
+        username: user.username,
+        name: user.name
+      }
       setBlogs(blogs.concat(addedBlog))
       blogFormRef.current.toggleVisibility()
       showNotificationMessage(`A new blog ${addedBlog.title} added`)

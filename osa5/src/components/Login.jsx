@@ -4,10 +4,23 @@ const Login = ({ handleLogin }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const login = (event) => {
+    event.preventDefault()
+    handleLogin(
+      {
+        username: username,
+        password: password
+      }
+    )
+
+    setUsername('')
+    setPassword('')
+  }
+
   return (
     <div>
       <h2>Login to the system</h2>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={login}>
         <div>
           username
           <input

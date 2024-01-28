@@ -1,6 +1,6 @@
 import { useState, useImperativeHandle, forwardRef } from 'react'
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, updateBlog }) => {
   const [showAll, setShowAll] = useState(false)
 
   const hideWhenShowAll = { display: showAll ? 'none' : '' }
@@ -18,7 +18,10 @@ const Blog = ({ blog }) => {
     marginBottom: 5
   }
 
-  console.log(blog)
+  const addLike = () => {
+    const blogToUpdate = { ...blog, likes: blog.likes + 1 }
+    updateBlog(blogToUpdate)
+  }
 
   return (
     <div style={blogStyle}>
@@ -35,7 +38,7 @@ const Blog = ({ blog }) => {
             </tr>
             <tr>
               <td>Likes: {blog.likes}</td>
-              <td><button>Like</button></td>
+              <td><button onClick={addLike}>Like</button></td>
             </tr>
             <tr>
               <td>{blog.user.name}</td>

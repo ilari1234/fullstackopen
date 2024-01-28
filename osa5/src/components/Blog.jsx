@@ -1,6 +1,6 @@
 import { useState, useImperativeHandle, forwardRef } from 'react'
 
-const Blog = ({ blog, updateBlog }) => {
+const Blog = ({ blog, updateLikes }) => {
   const [showAll, setShowAll] = useState(false)
 
   const hideWhenShowAll = { display: showAll ? 'none' : '' }
@@ -20,7 +20,7 @@ const Blog = ({ blog, updateBlog }) => {
 
   const addLike = () => {
     const blogToUpdate = { ...blog, likes: blog.likes + 1 }
-    updateBlog(blogToUpdate)
+    updateLikes(blogToUpdate)
   }
 
   return (

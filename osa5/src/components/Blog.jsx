@@ -1,13 +1,18 @@
-import { useState, useImperativeHandle, forwardRef } from 'react'
+import { useState } from 'react'
 
-const Blog = ({ blog, updateLikes }) => {
+const Blog = ({ blog, username, updateLikes, deleteBlog }) => {
   const [showAll, setShowAll] = useState(false)
+  const [showRemove, setShowRemove] = useState(false)
 
   const hideWhenShowAll = { display: showAll ? 'none' : '' }
   const showWhenShowAll = { display: showAll ? '' : 'none' }
+  const showWhenShowRemove = { display: showRemove ? '' : 'none' }
 
   const toggleShowAll = () => {
     setShowAll(!showAll)
+    if (blog.user.username === username) {
+      setShowRemove(true)
+    }
   }
 
   const blogStyle = {
@@ -21,6 +26,10 @@ const Blog = ({ blog, updateLikes }) => {
   const addLike = () => {
     const blogToUpdate = { ...blog, likes: blog.likes + 1 }
     updateLikes(blogToUpdate)
+  }
+
+  const removeBlog = () => {
+    deleteBlog(blog)
   }
 
   return (
@@ -42,6 +51,9 @@ const Blog = ({ blog, updateLikes }) => {
             </tr>
             <tr>
               <td>{blog.user.name}</td>
+            </tr>
+            <tr style={showWhenShowRemove}>
+              <td><button onClick={removeBlog}>Remove</button></td>
             </tr>
           </tbody>
         </table>

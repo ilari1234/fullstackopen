@@ -15,13 +15,17 @@ const App = () => {
 
   const blogFormRef = useRef()
 
+  const sortBlogs = blogs => {
+    return blogs.sort((a, b) => {
+      if (a.likes > b.likes) {
+        return -1
+      }
+    })
+  }
+
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs(blogs.sort((a, b) => {
-        if (a.likes > b.likes) {
-          return -1
-        }
-      }))
+      setBlogs(sortBlogs(blogs))
     )
   }, [])
 
@@ -82,15 +86,26 @@ const App = () => {
   const updateLikes = async (blogObject) => {
     try {
       const updatedBlog = await blogService.updateBlog(blogObject.id, blogObject)
-      const updatedBlogs = blogs.map(blog => blog.id !== updatedBlog.id ? blog : { ...blog, likes: blog.likes + 1 })
-      setBlogs(updatedBlogs.sort((a, b) => {
-        if (a.likes > b.likes) {
-          return -1
-        }
-      }))
+      setBlogs(sortBlogs(
+        blogs.map(blog => blog.id !== updatedBlog.id ? blog : { ...blog, likes: blog.likes + 1 })
+      ))
       showNotificationMessage(`A blog ${updatedBlog.title} was updated`)
     } catch (exception) {
       showErrorMessage('Updating blog failed')
+    }
+  }
+
+  const deleteBlog = async (blogObject) => {
+    try {
+      if (window.confirm(`Do you really wan to delete ${blogObject.title} from the list?`)) {
+        await blogService.deleteBlog(blogObject.id)
+        setBlogs(sortBlogs(
+          blogs.filter(blog => blog.id !== blogObject.id)
+        ))
+        showNotificationMessage(`Blog deleted`)
+      }
+    } catch (exception) {
+      showErrorMessage('Deleting blog failed')
     }
   }
 
@@ -111,7 +126,7 @@ const App = () => {
       <h2>Blogs</h2>
       <p>{user.name} is logged in</p>
       <button onClick={handleLogout}>Log out</button>
-      {blogs.map(blog => <Blog key={blog.id} blog={blog} updateLikes={updateLikes} />)}
+      {blogs.map(blog => <Blog key={blog.id} blog={blog} updateLikes={updateLikes} deleteBlog={deleteBlog} username={user.username} />)}
       <Togglable buttonLabel='Create new blog' ref={blogFormRef}>
         <BlogForm createBlog={createBlog} />
       </Togglable>

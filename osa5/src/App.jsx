@@ -64,7 +64,7 @@ const App = () => {
   const handleLogout = () => {
     localStorage.clear()
     setUser(null)
-    showNotificationMessage("Logged out from the system")
+    showNotificationMessage('Logged out from the system')
   }
 
   const createBlog = async (blogObject) => {
@@ -102,7 +102,7 @@ const App = () => {
         setBlogs(sortBlogs(
           blogs.filter(blog => blog.id !== blogObject.id)
         ))
-        showNotificationMessage(`Blog deleted`)
+        showNotificationMessage(`Blog ${blogObject.title} deleted`)
       }
     } catch (exception) {
       showErrorMessage('Deleting blog failed')

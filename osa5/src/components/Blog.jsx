@@ -34,13 +34,13 @@ const Blog = ({ blog, username, updateLikes, deleteBlog }) => {
   }
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} id='blogShown'>
       <div>
         {blog.title} {blog.author}
         <button style={hideWhenShowAll} onClick={toggleShowAll}>View</button>
         <button style={showWhenShowAll} onClick={toggleShowAll}>Hide</button>
       </div>
-      <div style={showWhenShowAll}>
+      <div style={showWhenShowAll} id='blogTogglable'>
         <table>
           <tbody>
             <tr>

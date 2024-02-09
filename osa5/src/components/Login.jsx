@@ -23,7 +23,7 @@ const Login = ({ handleLogin }) => {
       <h2>Login to the system</h2>
       <form onSubmit={login}>
         <div>
-          username
+          Username
           <input
             type="text"
             value={username}
@@ -33,7 +33,7 @@ const Login = ({ handleLogin }) => {
           />
         </div>
         <div>
-          password
+          Password
           <input
             type="password"
             value={password}

@@ -89,7 +89,7 @@ const App = () => {
       setBlogs(sortBlogs(
         blogs.map(blog => blog.id !== updatedBlog.id ? blog : { ...blog, likes: blog.likes + 1 })
       ))
-      showNotificationMessage(`A blog ${updatedBlog.title} was updated`)
+      showNotificationMessage(`A blog ${updatedBlog.title} was liked`)
     } catch (exception) {
       showErrorMessage('Updating blog failed')
     }
@@ -102,7 +102,7 @@ const App = () => {
         setBlogs(sortBlogs(
           blogs.filter(blog => blog.id !== blogObject.id)
         ))
-        showNotificationMessage(`Blog ${blogObject.title} deleted`)
+        showNotificationMessage(`Blog ${blogObject.title} was deleted`)
       }
     } catch (exception) {
       showErrorMessage('Deleting blog failed')

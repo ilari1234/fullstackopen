@@ -34,27 +34,27 @@ const Blog = ({ blog, username, updateLikes, deleteBlog }) => {
   }
 
   return (
-    <div style={blogStyle} id='blogShown'>
-      <div>
+    <div style={blogStyle}>
+      <div id='blogShown'>
         {blog.title} {blog.author}
-        <button style={hideWhenShowAll} onClick={toggleShowAll}>View</button>
-        <button style={showWhenShowAll} onClick={toggleShowAll}>Hide</button>
+        <button style={hideWhenShowAll} onClick={toggleShowAll} id='viewButton'>View</button>
+        <button style={showWhenShowAll} onClick={toggleShowAll} id='hideButton'>Hide</button>
       </div>
       <div style={showWhenShowAll} id='blogTogglable'>
         <table>
           <tbody>
             <tr>
-              <td>{blog.url}</td>
+              <td id='url'>{blog.url}</td>
             </tr>
             <tr>
-              <td>Likes: {blog.likes}</td>
-              <td><button onClick={addLike}>Like</button></td>
+              <td id='likes'>Likes: {blog.likes}</td>
+              <td><button id='likeButton' onClick={addLike}>Like</button></td>
             </tr>
             <tr>
-              <td>{blog.user.name}</td>
+              <td id='username'>{blog.user.name}</td>
             </tr>
             <tr style={showWhenShowRemove}>
-              <td><button onClick={removeBlog}>Remove</button></td>
+              <td><button id='deleteButton' onClick={removeBlog}>Remove</button></td>
             </tr>
           </tbody>
         </table>

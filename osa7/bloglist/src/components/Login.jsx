@@ -7,12 +7,10 @@ const Login = ({ handleLogin }) => {
 
   const login = (event) => {
     event.preventDefault()
-    handleLogin(
-      {
-        username: username,
-        password: password
-      }
-    )
+    handleLogin({
+      username: username,
+      password: password,
+    })
 
     setUsername('')
     setPassword('')
@@ -49,7 +47,7 @@ const Login = ({ handleLogin }) => {
 }
 
 Login.propTypes = {
-  handleLogin: PropTypes.func.isRequired
+  handleLogin: PropTypes.func.isRequired,
 }
 
 export default Login

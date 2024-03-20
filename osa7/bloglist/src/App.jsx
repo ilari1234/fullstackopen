@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import BlogList from './components/BlogList'
 import BlogForm from './components/BlogForm'
@@ -6,15 +6,11 @@ import Login from './components/Login'
 import Togglable from './components/Togglable'
 import Notification from './components/Notification'
 import blogService from './services/blogs'
-import loginService from './services/login'
-import {
-  showNotification,
-  showErrorMessage,
-} from './reducers/notificationReducer'
 import { initializeBlogs } from './reducers/blogReducer'
+import { setUser, loginUser, logoutUser } from './reducers/userReducer'
 
 const App = () => {
-  const [user, setUser] = useState(null)
+  const user = useSelector(state => state.user)
 
   const dispatch = useDispatch()
 
@@ -29,25 +25,16 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       blogService.setToken(user.token)
-      setUser(user)
+      dispatch(setUser(user))
     }
   }, [])
 
   const handleLogin = async userObject => {
-    try {
-      const user = await loginService.login(userObject)
-      window.localStorage.setItem('loggedBloglistUser', JSON.stringify(user))
-      blogService.setToken(user.token)
-      setUser(user)
-    } catch (exception) {
-      dispatch(showErrorMessage('Wrong username or password', 5))
-    }
+    dispatch(loginUser(userObject))
   }
 
   const handleLogout = () => {
-    localStorage.clear()
-    setUser(null)
-    dispatch(showNotification('Logged out from the system', 5))
+    dispatch(logoutUser())
   }
 
   if (user === null) {

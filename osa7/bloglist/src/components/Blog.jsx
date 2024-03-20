@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { likeBlog, deleteBlog } from '../reducers/blogReducer'
 
-const Blog = ({ blog, username }) => {
+const Blog = ({ blog }) => {
   const [showAll, setShowAll] = useState(false)
   const [showRemove, setShowRemove] = useState(false)
+  const user = useSelector(state => state.user)
 
   const hideWhenShowAll = { display: showAll ? 'none' : '' }
   const showWhenShowAll = { display: showAll ? '' : 'none' }
@@ -13,8 +14,7 @@ const Blog = ({ blog, username }) => {
 
   const toggleShowAll = () => {
     setShowAll(!showAll)
-    setShowRemove(true)
-    if (blog.user.username === username) {
+    if (blog.user.username === user.username) {
       setShowRemove(true)
     }
   }
@@ -87,7 +87,6 @@ const Blog = ({ blog, username }) => {
 
 Blog.propTypes = {
   blog: PropTypes.object.isRequired,
-  username: PropTypes.string.isRequired,
 }
 
 export default Blog

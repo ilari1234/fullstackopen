@@ -1,6 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit'
 import blogService from '../services/blogs'
 
+const sortBlogs = blogs => {
+  return blogs.sort((a, b) => {
+    if (a.likes > b.likes) {
+      return -1
+    }
+  })
+}
+
 const blogSlice = createSlice({
   name: 'blogs',
   initialState: [],
@@ -12,8 +20,10 @@ const blogSlice = createSlice({
       return [...state, action.payload]
     },
     updateBlog: (state, action) => {
-      return state.map(blog =>
-        blog.id === action.payload.id ? action.payload : blog,
+      return sortBlogs(
+        state.map(blog =>
+          blog.id === action.payload.id ? action.payload : blog,
+        ),
       )
     },
     removeBlog: (state, action) => {
@@ -23,14 +33,6 @@ const blogSlice = createSlice({
 })
 
 export const { setBlogs, addBlog, updateBlog, removeBlog } = blogSlice.actions
-
-const sortBlogs = blogs => {
-  return blogs.sort((a, b) => {
-    if (a.likes > b.likes) {
-      return -1
-    }
-  })
-}
 
 export const initializeBlogs = () => {
   return async dispatch => {
@@ -43,6 +45,23 @@ export const createBlog = blogObject => {
   return async dispatch => {
     const addedBlog = await blogService.addBlog(blogObject)
     dispatch(addBlog(addedBlog))
+  }
+}
+
+export const likeBlog = blogObject => {
+  return async dispatch => {
+    const updatedBlog = await blogService.updateBlog(blogObject.id, {
+      ...blogObject,
+      likes: blogObject.likes + 1,
+    })
+    dispatch(updateBlog(updatedBlog))
+  }
+}
+
+export const deleteBlog = blogObject => {
+  return async dispatch => {
+    await blogService.deleteBlog(blogObject.id)
+    dispatch(removeBlog(blogObject))
   }
 }
 

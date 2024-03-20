@@ -2,10 +2,6 @@ import { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { likeBlog, deleteBlog } from '../reducers/blogReducer'
-import {
-  showNotification,
-  showErrorMessage,
-} from '../reducers/notificationReducer'
 
 const Blog = ({ blog, username }) => {
   const [showAll, setShowAll] = useState(false)
@@ -34,28 +30,16 @@ const Blog = ({ blog, username }) => {
   const dispatch = useDispatch()
 
   const addLike = async () => {
-    try {
-      dispatch(likeBlog(blog))
-      dispatch(
-        showNotification(`Liked blog: ${blog.title} by ${blog.author}`, 5),
-      )
-    } catch (error) {
-      dispatch(showErrorMessage('Failed to like blog', 5))
-    }
+    dispatch(likeBlog(blog))
   }
 
   const removeBlog = async () => {
-    try {
-      if (
-        window.confirm(
-          `Do you really want to remove ${blog.title} from the list?`,
-        )
-      ) {
-        dispatch(deleteBlog(blog))
-        dispatch(showNotification(`Blog ${blog.title} was deleted`, 5))
-      }
-    } catch (error) {
-      dispatch(showErrorMessage('Deleting blog failed', 5))
+    if (
+      window.confirm(
+        `Do you really want to remove ${blog.title} from the list?`,
+      )
+    ) {
+      dispatch(deleteBlog(blog))
     }
   }
 

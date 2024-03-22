@@ -4,12 +4,14 @@ import BlogList from './components/BlogList'
 import Login from './components/Login'
 import UserList from './components/UserList'
 import Notification from './components/Notification'
+import User from './components/User'
 import blogService from './services/blogs'
 import { setUser, loginUser, logoutUser } from './reducers/userReducer'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useMatch } from 'react-router-dom'
 
 const App = () => {
   const user = useSelector(state => state.user)
+  const blogUsers = useSelector(state => state.blogUsers)
 
   const dispatch = useDispatch()
 
@@ -30,6 +32,11 @@ const App = () => {
     dispatch(logoutUser())
   }
 
+  const match = useMatch('/users/:id')
+  const blogUser = match
+    ? blogUsers.find(blogUser => blogUser.id === match.params.id)
+    : null
+
   if (user === null) {
     return (
       <>
@@ -49,23 +56,19 @@ const App = () => {
       <h2>Blogs</h2>
       <p>{user.name} is logged in</p>
       <button onClick={handleLogout}>Log out</button>
-      <Router>
-        <div>
-          <Link style={padding} to="/">
-            home
-          </Link>
-          <Link style={padding} to="/blogs">
-            blogs
-          </Link>
-          <Link style={padding} to="/users">
-            users
-          </Link>
-        </div>
-        <Routes>
-          <Route path="/blogs" element={<BlogList />} />
-          <Route path="/users" element={<UserList />} />
-        </Routes>
-      </Router>
+      <div>
+        <Link style={padding} to="/">
+          blogs
+        </Link>
+        <Link style={padding} to="/users">
+          users
+        </Link>
+      </div>
+      <Routes>
+        <Route path="/" element={<BlogList />} />
+        <Route path="/users" element={<UserList />} />
+        <Route path="/users/:id" element={<User user={blogUser} />} />
+      </Routes>
     </div>
   )
 }

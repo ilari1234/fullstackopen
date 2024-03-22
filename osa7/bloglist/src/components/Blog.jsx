@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { likeBlog, deleteBlog } from '../reducers/blogReducer'
+import { Link } from 'react-router-dom'
 
 const Blog = ({ blog }) => {
   const [showAll, setShowAll] = useState(false)
@@ -46,7 +47,8 @@ const Blog = ({ blog }) => {
   return (
     <div style={blogStyle}>
       <div id="blogShown">
-        {blog.title} {blog.author}
+        <Link to={`/blogs/${blog.id}`}>{blog.title} </Link>
+        {blog.author}
         <button style={hideWhenShowAll} onClick={toggleShowAll} id="viewButton">
           View
         </button>

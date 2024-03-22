@@ -5,6 +5,7 @@ import Login from './components/Login'
 import UserList from './components/UserList'
 import Notification from './components/Notification'
 import User from './components/User'
+import BlogDetail from './components/BlogDetail'
 import blogService from './services/blogs'
 import { setUser, loginUser, logoutUser } from './reducers/userReducer'
 import { Routes, Route, Link, useMatch } from 'react-router-dom'
@@ -12,6 +13,7 @@ import { Routes, Route, Link, useMatch } from 'react-router-dom'
 const App = () => {
   const user = useSelector(state => state.user)
   const blogUsers = useSelector(state => state.blogUsers)
+  const blogs = useSelector(state => state.blogs)
 
   const dispatch = useDispatch()
 
@@ -35,6 +37,11 @@ const App = () => {
   const match = useMatch('/users/:id')
   const blogUser = match
     ? blogUsers.find(blogUser => blogUser.id === match.params.id)
+    : null
+
+  const blogMatch = useMatch('/blogs/:id')
+  const blog = blogMatch
+    ? blogs.find(blog => blog.id === blogMatch.params.id)
     : null
 
   if (user === null) {
@@ -68,6 +75,7 @@ const App = () => {
         <Route path="/" element={<BlogList />} />
         <Route path="/users" element={<UserList />} />
         <Route path="/users/:id" element={<User user={blogUser} />} />
+        <Route path="/blogs/:id" element={<BlogDetail blog={blog} />} />
       </Routes>
     </div>
   )

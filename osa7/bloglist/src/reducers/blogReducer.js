@@ -92,4 +92,18 @@ export const deleteBlog = blogObject => {
   }
 }
 
+export const commentBlog = (blogObject, comment) => {
+  return async dispatch => {
+    try {
+      const commentedBlog = await blogService.commentBlog(blogObject.id, {
+        comment,
+      })
+      dispatch(updateBlog(commentedBlog))
+      dispatch(showNotification(`Commented on ${commentedBlog.title}`, 5))
+    } catch (error) {
+      dispatch(showErrorMessage('Failed to comment on blog', 5))
+    }
+  }
+}
+
 export default blogSlice.reducer

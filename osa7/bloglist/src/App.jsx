@@ -9,6 +9,7 @@ import BlogDetail from './components/BlogDetail'
 import blogService from './services/blogs'
 import { setUser, loginUser, logoutUser } from './reducers/userReducer'
 import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Container } from '@mui/material'
 
 const App = () => {
   const user = useSelector(state => state.user)
@@ -58,26 +59,28 @@ const App = () => {
   }
 
   return (
-    <div>
-      <Notification />
-      <h2>Blogs</h2>
-      <p>{user.name} is logged in</p>
-      <button onClick={handleLogout}>Log out</button>
+    <Container>
       <div>
-        <Link style={padding} to="/">
-          blogs
-        </Link>
-        <Link style={padding} to="/users">
-          users
-        </Link>
+        <Notification />
+        <h2>Blogs</h2>
+        <p>{user.name} is logged in</p>
+        <button onClick={handleLogout}>Log out</button>
+        <div>
+          <Link style={padding} to="/">
+            blogs
+          </Link>
+          <Link style={padding} to="/users">
+            users
+          </Link>
+        </div>
+        <Routes>
+          <Route path="/" element={<BlogList />} />
+          <Route path="/users" element={<UserList />} />
+          <Route path="/users/:id" element={<User user={blogUser} />} />
+          <Route path="/blogs/:id" element={<BlogDetail blog={blog} />} />
+        </Routes>
       </div>
-      <Routes>
-        <Route path="/" element={<BlogList />} />
-        <Route path="/users" element={<UserList />} />
-        <Route path="/users/:id" element={<User user={blogUser} />} />
-        <Route path="/blogs/:id" element={<BlogDetail blog={blog} />} />
-      </Routes>
-    </div>
+    </Container>
   )
 }
 

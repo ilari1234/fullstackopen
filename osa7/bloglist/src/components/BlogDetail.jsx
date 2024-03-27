@@ -17,6 +17,12 @@ const BlogDetail = ({ blog }) => {
       <p>{blog.likes} likes</p>
       <button onClick={addLike}>like</button>
       <p>added by {blog.user.name}</p>
+      <h2>Comments</h2>
+      <ul>
+        {blog.comments.map(comment => (
+          <li key={comment}>{comment}</li>
+        ))}
+      </ul>
     </>
   )
 }

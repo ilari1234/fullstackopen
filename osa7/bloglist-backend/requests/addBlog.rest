@@ -1,0 +1,10 @@
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+Authorization: Bearer
+
+{
+    "title": "test with middleware",
+    "author": "String",
+    "url": "String",
+    "likes": 1
+}

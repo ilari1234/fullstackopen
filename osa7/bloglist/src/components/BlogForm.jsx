@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createBlog } from '../reducers/blogReducer'
 
+import Button from '@mui/material/Button'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+
 const BlogForm = () => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -28,35 +32,43 @@ const BlogForm = () => {
     setUrl('')
   }
 
+  const padding = {
+    padding: 10,
+  }
+
   return (
     <div>
-      <h2>Create a blog</h2>
+      <Typography variant="h5" style={padding}>
+        Create a blog
+      </Typography>
       <form onSubmit={addBlog}>
-        <label htmlFor="title">Title</label>
-        <input
+        <TextField
+          label="Title"
           type="text"
           value={title}
           name="title"
           id="title"
           onChange={({ target }) => setTitle(target.value)}
         />
-        <label htmlFor="author">Author</label>
-        <input
+        <TextField
+          label="Author"
           type="text"
           value={author}
           name="author"
           id="author"
           onChange={({ target }) => setAuthor(target.value)}
         />
-        <label htmlFor="url">Url</label>
-        <input
+        <TextField
+          label="Url"
           type="text"
           value={url}
           name="url"
           id="url"
           onChange={({ target }) => setUrl(target.value)}
         />
-        <button type="submit">Add blog</button>
+        <Button type="submit" color="primary" variant="contained">
+          Add blog
+        </Button>
       </form>
     </div>
   )

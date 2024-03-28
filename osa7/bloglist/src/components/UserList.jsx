@@ -1,7 +1,19 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link as RouterLink } from 'react-router-dom'
 import { initializeBlogUsers } from '../reducers/blogUserReducer'
+
+import Typography from '@mui/material/Typography'
+import Link from '@mui/material/Link'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material'
 
 const UserList = () => {
   const users = useSelector(state => state.blogUsers)
@@ -13,23 +25,29 @@ const UserList = () => {
 
   return (
     <>
-      <h2>Users</h2>
-      <table>
-        <tbody>
-          <tr>
-            <th>Username</th>
-            <th>Blogs created</th>
-          </tr>
-          {users.map(user => (
-            <tr key={user.id}>
-              <td>
-                <Link to={`/users/${user.id}`}>{user.name}</Link>
-              </td>
-              <td>{user.blogs.length}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Typography variant="h6">Users</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Blogs created</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map(user => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Link component={RouterLink} to={`/users/${user.id}`}>
+                    {user.name}
+                  </Link>
+                </TableCell>
+                <TableCell>{user.blogs.length}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   )
 }

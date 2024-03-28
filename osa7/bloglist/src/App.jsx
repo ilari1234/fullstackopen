@@ -8,8 +8,17 @@ import User from './components/User'
 import BlogDetail from './components/BlogDetail'
 import blogService from './services/blogs'
 import { setUser, loginUser, logoutUser } from './reducers/userReducer'
-import { Routes, Route, Link, useMatch } from 'react-router-dom'
+import { Routes, Route, Link as RouterLink, useMatch } from 'react-router-dom'
 import { Container } from '@mui/material'
+
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import MenuIcon from '@mui/icons-material/Menu'
+import Link from '@mui/material/Link'
 
 const App = () => {
   const user = useSelector(state => state.user)
@@ -60,26 +69,46 @@ const App = () => {
 
   return (
     <Container>
-      <div>
-        <Notification />
-        <h2>Blogs</h2>
-        <p>{user.name} is logged in</p>
-        <button onClick={handleLogout}>Log out</button>
-        <div>
-          <Link style={padding} to="/">
-            blogs
-          </Link>
-          <Link style={padding} to="/users">
-            users
-          </Link>
-        </div>
-        <Routes>
-          <Route path="/" element={<BlogList />} />
-          <Route path="/users" element={<UserList />} />
-          <Route path="/users/:id" element={<User user={blogUser} />} />
-          <Route path="/blogs/:id" element={<BlogDetail blog={blog} />} />
-        </Routes>
-      </div>
+      <Notification />
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Bloglist
+            </Typography>
+            <Link component={RouterLink} style={padding} color="inherit" to="/">
+              Blogs
+            </Link>
+            <Link
+              component={RouterLink}
+              style={padding}
+              color="inherit"
+              to="/users"
+            >
+              Users
+            </Link>
+            <Typography>{user.name} is logged in</Typography>
+            <Button onClick={handleLogout} color="inherit">
+              Log out
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </Box>
+      <Routes>
+        <Route path="/" element={<BlogList />} />
+        <Route path="/users" element={<UserList />} />
+        <Route path="/users/:id" element={<User user={blogUser} />} />
+        <Route path="/blogs/:id" element={<BlogDetail blog={blog} />} />
+      </Routes>
     </Container>
   )
 }

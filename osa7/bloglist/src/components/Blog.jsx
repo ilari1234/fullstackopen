@@ -5,13 +5,8 @@ import { likeBlog, deleteBlog } from '../reducers/blogReducer'
 import { Link } from 'react-router-dom'
 
 import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import { CardActions, Typography } from '@mui/material'
-
-import Accordion from '@mui/material/Accordion'
-import AccordionSummary from '@mui/material/AccordionSummary'
-import AccordionDetails from '@mui/material/AccordionDetails'
+import { Card, CardContent, CardActions, Typography } from '@mui/material'
+import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 const Blog = ({ blog }) => {
@@ -23,6 +18,8 @@ const Blog = ({ blog }) => {
   const checkOwner = () => {
     if (blog.user.username === user.username) {
       setShowRemove(true)
+    } else {
+      setShowRemove(false)
     }
   }
 
